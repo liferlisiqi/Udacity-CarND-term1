@@ -38,10 +38,10 @@ def region_of_interest(img):
 
     xsize = img.shape[1]
     ysize = img.shape[0]
-    left_bottom = (0, ysize)
-    left_top = (xsize / 2 - 50, ysize / 2 + 50)
-    right_bottom = (xsize, ysize)
-    right_top = (xsize / 2 + 50, ysize / 2 + 50)
+    left_bottom = (150, ysize)
+    left_top = (xsize / 2 - 80, ysize / 2 + 100)
+    right_bottom = (xsize - 50, ysize)
+    right_top = (xsize / 2 + 80, ysize / 2 + 100)
     vertices = np.array([[left_bottom, left_top, right_top, right_bottom]], dtype=np.int32)
 
     if len(img.shape) > 2:
@@ -110,6 +110,7 @@ def divide_lines(img, lines):
                 all_right_lines.append(line[0])
     all_left_lines.sort(key=lambda x: x[0])
     all_right_lines.sort(key=lambda x: x[0])
+
     for line in all_left_lines:
         if len(left_lines) != 0:
             if line[0] > left_lines[-1][2] and line[1] < left_lines[-1][3]:
@@ -145,19 +146,61 @@ def hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap):
     return line_img
 
 
+def x_gradient(img):
+    x_gra = cv2.Sobel(img, cv2.CV_16S, 1, 0)
+    edges = cv2.convertScaleAbs(x_gra)
+    return edges
+
+
+def brideye(img):
+    xsize = img.shape[1]
+    ysize = img.shape[0]
+    left_bottom = (0, ysize)
+    left_top = (xsize / 2 - 100, ysize / 2 + 100)
+    right_bottom = (xsize, ysize)
+    right_top = (xsize / 2 + 100, ysize / 2 + 100)
+    pts1 = np.float32([left_top, right_top, left_bottom, right_bottom])
+    pts2 = np.float32([[0, 0], [500, 0], [0, 500], [500, 500]])
+    mtx = cv2.getPerspectiveTransform(pts1, pts2)
+    dst = cv2.warpPerspective(img, mtx, (500, 500))
+    dst = x_gradient(dst)
+    return dst
+
+
 def process_image(image):
-    dst = cv2.undistort(image, mtx, dist, None, mtx)
-    hsv = cv2.cvtColor(dst, cv2.COLOR_RGB2HLS)
+    udst = cv2.undistort(image, mtx, dist, None, mtx)
+    hsv = cv2.cvtColor(udst, cv2.COLOR_RGB2HLS)
     sta = hsv[:, :, 2]
-    blur_gray = cv2.GaussianBlur(sta, (5, 5), 0)
-    edges = cv2.Canny(blur_gray, 50, 200)
-    interest_edges = region_of_interest(edges)
-    hough_line = hough_lines(interest_edges, 2, np.pi / 180, 15, 40, 20)
+    blur = cv2.GaussianBlur(sta, (5, 5), 0)
+    canny = cv2.Canny(blur, 50, 200)
+    edges = x_gradient(canny)
+    roi = region_of_interest(edges)
+    brid = brideye(roi)
+    hough_line = hough_lines(edges, 2, np.pi / 180, 5, 40, 20)
     result = cv2.addWeighted(image, 0.8, hough_line, 1.0, 0.0)
+    plt.subplot(231), plt.imshow(image)
+    plt.title("origin"), plt.xticks([]), plt.yticks([])
+    plt.subplot(232), plt.imshow(sta, cmap='gray')
+    plt.title("statu"), plt.xticks([]), plt.yticks([])
+    plt.subplot(233), plt.imshow(edges, cmap='gray')
+    plt.title("edges"), plt.xticks([]), plt.yticks([])
+    plt.subplot(234), plt.imshow(roi, cmap='gray')
+    plt.title("roi"), plt.xticks([]), plt.yticks([])
+    plt.subplot(235), plt.imshow(brid, cmap='gray')
+    plt.title("brid"), plt.xticks([]), plt.yticks([])
+    plt.subplot(236), plt.imshow(result)
+    plt.title("result"), plt.xticks([]), plt.yticks([])
+    plt.show()
     return result
 
 
-clip = VideoFileClip("challenge_video.mp4")
-output = "challenge_result.mp4"
-line_clip = clip.fl_image(process_image)
-line_clip.write_videofile(output, audio=False)
+images = glob.glob("test_images/*.jpg")
+
+for frame in images:
+    image = cv2.imread(frame)
+    process_image(image)
+
+# clip = VideoFileClip("challenge_video.mp4")
+# output = "challenge_result.mp4"
+# line_clip = clip.fl_image(process_image)
+# line_clip.write_videofile(output, audio=False)
