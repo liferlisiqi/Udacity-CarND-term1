@@ -38,9 +38,9 @@ def region_of_interest(img):
 
     xsize = img.shape[1]
     ysize = img.shape[0]
-    left_bottom = (150, ysize)
+    left_bottom = (180, ysize - 48)
     left_top = (xsize / 2 - 80, ysize / 2 + 100)
-    right_bottom = (xsize - 50, ysize)
+    right_bottom = (xsize - 20, ysize - 48)
     right_top = (xsize / 2 + 80, ysize / 2 + 100)
     vertices = np.array([[left_bottom, left_top, right_top, right_bottom]], dtype=np.int32)
 
@@ -155,10 +155,10 @@ def x_gradient(img):
 def warp(img):
     xsize = img.shape[1]
     ysize = img.shape[0]
-    left_bottom = (0, ysize)
-    left_top = (xsize / 2 - 100, ysize / 2 + 100)
-    right_bottom = (xsize, ysize)
-    right_top = (xsize / 2 + 100, ysize / 2 + 100)
+    left_bottom = (180, ysize - 48)
+    left_top = (xsize / 2 - 80, ysize / 2 + 100)
+    right_bottom = (xsize - 20, ysize - 48)
+    right_top = (xsize / 2 + 80, ysize / 2 + 100)
     pts1 = np.float32([left_top, right_top, left_bottom, right_bottom])
     pts2 = np.float32([[0, 0], [500, 0], [0, 500], [500, 500]])
     mtx = cv2.getPerspectiveTransform(pts1, pts2)
@@ -171,10 +171,10 @@ def warp(img):
 def re_warp(img):
     xsize = 320
     ysize = 180
-    left_bottom = (0, ysize)
-    left_top = (xsize / 2 - 25, ysize / 2 + 25)
-    right_bottom = (xsize, ysize)
-    right_top = (xsize / 2 + 25, ysize / 2 + 25)
+    left_bottom = (45, ysize - 12)
+    left_top = (xsize / 2 - 20, ysize / 2 + 25)
+    right_bottom = (xsize - 5, ysize - 12)
+    right_top = (xsize / 2 + 20, ysize / 2 + 25)
     pts1 = np.float32([left_top, right_top, left_bottom, right_bottom])
     pts2 = np.float32([[0, 0], [500, 0], [0, 500], [500, 500]])
     mtx = cv2.getPerspectiveTransform(pts2, pts1)
@@ -264,41 +264,53 @@ def polyfit_2(img):
 
 def process_image(image):
     # udst = cv2.undistort(image, mtx, dist, None, mtx)
-    hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HLS)
-    sta = hsv[:, :, 2]
-    blur = cv2.GaussianBlur(sta, (5, 5), 0)
-    canny = cv2.Canny(blur, 50, 200)
-    edges = x_gradient(canny)
-    roi = region_of_interest(edges)
+    roi = region_of_interest(image)
     bird = warp(roi)
-    # his = historgram(bird)
-    poly = polyfit_2(bird)
+    hls = cv2.cvtColor(bird, cv2.COLOR_RGB2HLS)
+    sta = hls[:, :, 2]
+    light = hls[:, :, 1]
+    # blur = cv2.GaussianBlur(sta, (5, 5), 0)
+    yellow = cv2.Canny(sta, 50, 200)
+    white = cv2.Canny(light, 100, 150)
+    canny = cv2.addWeighted(yellow, 1.0, white, 1.0, 0.0)
+    edges = x_gradient(canny)
+    poly = polyfit_2(edges)
     unbird = re_warp(poly)
     result = cv2.addWeighted(image, 0.8, unbird, 1.0, 0.0)
 
-    plt.subplot(231), plt.imshow(image)
-    plt.title("origin"), plt.xticks([]), plt.yticks([])
-    plt.subplot(232), plt.imshow(edges, cmap='gray')
-    plt.title("edges"), plt.xticks([]), plt.yticks([])
-    plt.subplot(233), plt.imshow(roi, cmap='gray')
-    plt.title("roi"), plt.xticks([]), plt.yticks([])
-    plt.subplot(234), plt.imshow(bird, cmap='gray')
-    plt.title("brid"), plt.xticks([]), plt.yticks([])
-    plt.subplot(235), plt.imshow(poly, cmap='gray')
-    plt.title("poly"), plt.xticks([]), plt.yticks([])
-    plt.subplot(236), plt.imshow(result)
-    plt.title("result"), plt.xticks([]), plt.yticks([])
-    plt.show()
+    # plt.subplot(4, 4, 1), plt.imshow(image)
+    # plt.title("origin"), plt.xticks([]), plt.yticks([])
+    # plt.subplot(4, 4, 2), plt.imshow(roi, cmap='gray')
+    # plt.title("roi"), plt.xticks([]), plt.yticks([])
+    # plt.subplot(4, 4, 3), plt.imshow(bird, cmap='gray')
+    # plt.title("bird"), plt.xticks([]), plt.yticks([])
+    # plt.subplot(4, 4, 4), plt.imshow(sta, cmap='gray')
+    # plt.title("S"), plt.xticks([]), plt.yticks([])
+    # plt.subplot(4, 4, 5), plt.imshow(yellow, cmap='gray')
+    # plt.title("yellow"), plt.xticks([]), plt.yticks([])
+    # plt.subplot(4, 4, 6), plt.imshow(light, cmap='gray')
+    # plt.title("L"), plt.xticks([]), plt.yticks([])
+    # plt.subplot(4, 4, 7), plt.imshow(white, cmap='gray')
+    # plt.title("white"), plt.xticks([]), plt.yticks([])
+    # plt.subplot(4, 4, 8), plt.imshow(canny, cmap='gray')
+    # plt.title("canny"), plt.xticks([]), plt.yticks([])
+    # plt.subplot(4, 4, 9), plt.imshow(edges, cmap='gray')
+    # plt.title("edges"), plt.xticks([]), plt.yticks([])
+    # plt.subplot(4, 4, 10), plt.imshow(poly, cmap='gray')
+    # plt.title("poly"), plt.xticks([]), plt.yticks([])
+    # plt.subplot(4, 4, 11), plt.imshow(result)
+    # plt.title("result"), plt.xticks([]), plt.yticks([])
+    # plt.show()
     return result
 
 
-images = glob.glob("test_images/*.jpg")
+# images = glob.glob("test_images/*.jpg")
+#
+# for frame in images:
+#     image = cv2.imread(frame)
+#     process_image(image)
 
-for frame in images:
-    image = cv2.imread(frame)
-    process_image(image)
-
-# clip = VideoFileClip("challenge_video.mp4")
-# output = "challenge_result.mp4"
-# line_clip = clip.fl_image(process_image)
-# line_clip.write_videofile(output, audio=False)
+clip = VideoFileClip("project_video.mp4")
+output = "project_result.mp4"
+line_clip = clip.fl_image(process_image)
+line_clip.write_videofile(output, audio=False)
