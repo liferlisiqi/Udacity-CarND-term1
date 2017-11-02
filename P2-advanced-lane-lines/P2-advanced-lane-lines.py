@@ -169,8 +169,8 @@ def warp(img):
 
 
 def re_warp(img):
-    xsize = 180
-    ysize = 320
+    xsize = 320
+    ysize = 180
     left_bottom = (0, ysize)
     left_top = (xsize / 2 - 25, ysize / 2 + 25)
     right_bottom = (xsize, ysize)
@@ -178,8 +178,8 @@ def re_warp(img):
     pts1 = np.float32([left_top, right_top, left_bottom, right_bottom])
     pts2 = np.float32([[0, 0], [500, 0], [0, 500], [500, 500]])
     mtx = cv2.getPerspectiveTransform(pts2, pts1)
-    dst = cv2.warpPerspective(img, mtx, (ysize, xsize))
-    # dst = cv2.resize(dst, None, fx=4, fy=4)
+    dst = cv2.warpPerspective(img, mtx, (xsize, ysize))
+    dst = cv2.resize(dst, None, fx=4, fy=4)
     return dst
 
 
@@ -256,8 +256,8 @@ def polyfit_2(img):
     rxp = np.polyval(zr, yp)
     img2 = np.zeros((size, size, 3), dtype=np.uint8)
     for y in range(size - 2):
-        cv2.line(img2, (int(lxp[y]), y), (int(lxp[y + 1]), y + 1), color=[255, 0, 0], thickness=5)
-        cv2.line(img2, (int(rxp[y]), y), (int(rxp[y + 1]), y + 1), color=[0, 255, 0], thickness=5)
+        cv2.line(img2, (int(lxp[y]), y), (int(lxp[y + 1]), y + 1), color=[255, 0, 0], thickness=10)
+        cv2.line(img2, (int(rxp[y]), y), (int(rxp[y + 1]), y + 1), color=[0, 255, 0], thickness=10)
 
     return img2
 
@@ -274,7 +274,7 @@ def process_image(image):
     # his = historgram(bird)
     poly = polyfit_2(bird)
     unbird = re_warp(poly)
-    # result = cv2.addWeighted(image, 0.8, unbird, 1.0, 0.0)
+    result = cv2.addWeighted(image, 0.8, unbird, 1.0, 0.0)
 
     plt.subplot(231), plt.imshow(image)
     plt.title("origin"), plt.xticks([]), plt.yticks([])
@@ -286,7 +286,7 @@ def process_image(image):
     plt.title("brid"), plt.xticks([]), plt.yticks([])
     plt.subplot(235), plt.imshow(poly, cmap='gray')
     plt.title("poly"), plt.xticks([]), plt.yticks([])
-    plt.subplot(236), plt.imshow(unbird)
+    plt.subplot(236), plt.imshow(result)
     plt.title("result"), plt.xticks([]), plt.yticks([])
     plt.show()
     return result
