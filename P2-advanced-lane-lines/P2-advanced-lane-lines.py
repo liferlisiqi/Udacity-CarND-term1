@@ -30,7 +30,7 @@ def undistort():
     return mtx, dist
 
 
-mtx, dist = undistort()
+# mtx, dist = undistort()
 
 
 def region_of_interest(img):
@@ -152,7 +152,7 @@ def x_gradient(img):
     return edges
 
 
-def brideye(img):
+def warp(img):
     xsize = img.shape[1]
     ysize = img.shape[0]
     left_bottom = (0, ysize)
@@ -163,32 +163,130 @@ def brideye(img):
     pts2 = np.float32([[0, 0], [500, 0], [0, 500], [500, 500]])
     mtx = cv2.getPerspectiveTransform(pts1, pts2)
     dst = cv2.warpPerspective(img, mtx, (500, 500))
-    dst = x_gradient(dst)
+    # dst = x_gradient(dst)
+    dst = cv2.dilate(dst, (5, 5))
     return dst
 
 
+def re_warp(img):
+    xsize = 180
+    ysize = 320
+    left_bottom = (0, ysize)
+    left_top = (xsize / 2 - 25, ysize / 2 + 25)
+    right_bottom = (xsize, ysize)
+    right_top = (xsize / 2 + 25, ysize / 2 + 25)
+    pts1 = np.float32([left_top, right_top, left_bottom, right_bottom])
+    pts2 = np.float32([[0, 0], [500, 0], [0, 500], [500, 500]])
+    mtx = cv2.getPerspectiveTransform(pts2, pts1)
+    dst = cv2.warpPerspective(img, mtx, (ysize, xsize))
+    # dst = cv2.resize(dst, None, fx=4, fy=4)
+    return dst
+
+
+def historgram(img):
+    xsize = img.shape[1]
+    ysize = img.shape[0]
+    hist = [0 for i in range(xsize)]
+    for i in range(50, 150):
+        for j in range(ysize):
+            hist[i] += img[j][i]
+    for i in range(400, 500):
+        for j in range(ysize):
+            hist[i] += img[j][i]
+    return hist
+
+
+def get_peaks(his):
+    left_peak = 0
+    right_peak = len(his)
+    for i in range(0, len(his) / 2):
+        if his[i] > his[left_peak]:
+            left_peak = i
+
+    for i in range(len(his) / 2, len(his)):
+        if his[i] > his[right_peak]:
+            right_peak = i
+    return left_peak, right_peak
+
+
+def sliding_window(img):
+    # left_peak, right_peak = get_peaks(img)
+    size = img.shape[1]
+    l_img = img[:, 50:150]
+    r_img = img[:, 380:480]
+    lx = []
+    ly = []
+    rx = []
+    ry = []
+
+    for y in range(size):
+        n = 0
+        s = 0
+        for x in range(50, 150):
+
+            if img[y][x] > 0:
+                s += x
+                n += 1
+
+        if n != 0:
+            lx.append(s / n)
+            ly.append(y)
+
+        n = 0
+        s = 0
+        for x in range(380, 480):
+            if img[y][x] > 0:
+                s += x
+                n += 1
+
+        if n != 0:
+            rx.append(s / n)
+            ry.append(y)
+
+    return lx, ly, rx, ry
+
+
+def polyfit_2(img):
+    lxo, lyo, rxo, ryo = sliding_window(img)
+    size = img.shape[0]
+    yp = np.arange(1, size, 1)
+    zl = np.polyfit(lyo, lxo, 1)
+    zr = np.polyfit(ryo, rxo, 1)
+    lxp = np.polyval(zl, yp)
+    rxp = np.polyval(zr, yp)
+    img2 = np.zeros((size, size, 3), dtype=np.uint8)
+    for y in range(size - 2):
+        cv2.line(img2, (int(lxp[y]), y), (int(lxp[y + 1]), y + 1), color=[255, 0, 0], thickness=5)
+        cv2.line(img2, (int(rxp[y]), y), (int(rxp[y + 1]), y + 1), color=[0, 255, 0], thickness=5)
+
+    return img2
+
+
 def process_image(image):
-    udst = cv2.undistort(image, mtx, dist, None, mtx)
-    hsv = cv2.cvtColor(udst, cv2.COLOR_RGB2HLS)
+    # udst = cv2.undistort(image, mtx, dist, None, mtx)
+    hsv = cv2.cvtColor(image, cv2.COLOR_RGB2HLS)
     sta = hsv[:, :, 2]
     blur = cv2.GaussianBlur(sta, (5, 5), 0)
     canny = cv2.Canny(blur, 50, 200)
     edges = x_gradient(canny)
     roi = region_of_interest(edges)
-    brid = brideye(roi)
-    hough_line = hough_lines(edges, 2, np.pi / 180, 5, 40, 20)
-    result = cv2.addWeighted(image, 0.8, hough_line, 1.0, 0.0)
+    bird = warp(roi)
+    # his = historgram(bird)
+    poly = polyfit_2(bird)
+    unbird = re_warp(poly)
+    # result = cv2.addWeighted(image, 0.8, unbird, 1.0, 0.0)
+
     plt.subplot(231), plt.imshow(image)
     plt.title("origin"), plt.xticks([]), plt.yticks([])
-    plt.subplot(232), plt.imshow(sta, cmap='gray')
-    plt.title("statu"), plt.xticks([]), plt.yticks([])
-    plt.subplot(233), plt.imshow(edges, cmap='gray')
+    plt.subplot(232), plt.imshow(edges, cmap='gray')
     plt.title("edges"), plt.xticks([]), plt.yticks([])
-    plt.subplot(234), plt.imshow(roi, cmap='gray')
+    plt.subplot(233), plt.imshow(roi, cmap='gray')
     plt.title("roi"), plt.xticks([]), plt.yticks([])
-    plt.subplot(235), plt.imshow(brid, cmap='gray')
+    plt.subplot(234), plt.imshow(bird, cmap='gray')
     plt.title("brid"), plt.xticks([]), plt.yticks([])
-    plt.subplot(236), plt.imshow(result)
+    plt.subplot(235), plt.imshow(poly, cmap='gray')
+    plt.title("poly"), plt.xticks([]), plt.yticks([])
+    plt.subplot(236), plt.imshow(unbird)
     plt.title("result"), plt.xticks([]), plt.yticks([])
     plt.show()
     return result
