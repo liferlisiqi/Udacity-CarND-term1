@@ -18,7 +18,7 @@ from moviepy.editor import VideoFileClip
 # cv2.destroyAllWindows()
 
 
-def region_of_interest(img):
+def get_roi(img):
     """
     Applies an image mask.
     Only keeps the region of the image defined by the polygon
@@ -50,23 +50,7 @@ def region_of_interest(img):
     return masked_image
 
 
-def draw_lines(img, lines, color=[255, 0, 0], thickness=2):
-    """
-    NOTE: this is the function you might want to use as a starting point once you want to
-    average/extrapolate the line segments you detect to map out the full
-    extent of the lane (going from the result shown in raw-lines-example.mp4
-    to that shown in P1_example.mp4).
-
-    Think about things like separating line segments by their
-    slope ((y2-y1)/(x2-x1)) to decide which segments are part of the left
-    line vs. the right line.  Then, you can average the position of each of
-    the lines and extrapolate to the top and bottom of the lane.
-
-    This function draws `lines` with `color` and `thickness`.
-    Lines are drawn on the image inplace (mutates the image).
-    If you want to make the lines semi-transparent, think about combining
-    this function with the weighted_img() function below
-    """
+def draw_lines(img, lines, color, thickness):
     for line in lines:
         cv2.line(img, (line[0], line[1]), (line[2], line[3]), color, thickness)
 
@@ -116,6 +100,7 @@ def divide_lines(img, lines):
     all_right_lines = []
     left_lines = []
     right_lines = []
+
     for line in lines:
         if abs(line[0][0] - line[0][2]) > 2:
             k = (line[0][3] - line[0][1]) * 1.0 / (line[0][2] - line[0][0])
@@ -123,8 +108,10 @@ def divide_lines(img, lines):
                 all_left_lines.append(line[0])
             elif line[0][2] > x_middle and k > 0.5:
                 all_right_lines.append(line[0])
+
     all_left_lines.sort(key=lambda x: x[0])
     all_right_lines.sort(key=lambda x: x[0])
+
     for line in all_left_lines:
         if len(left_lines) != 0:
             if line[0] > left_lines[-1][2] and line[1] < left_lines[-1][3]:
@@ -144,6 +131,30 @@ def divide_lines(img, lines):
     return left_lines, right_lines
 
 
+def improved_lines(left_lines, right_lines, shape):
+    ysize = shape[0]
+
+    left_bottom = [left_lines[0][0], left_lines[0][1]]
+    left_top = [left_lines[-1][2], left_lines[-1][3]]
+    right_top = [right_lines[0][0], right_lines[0][1]]
+    right_bottom = [right_lines[-1][2], right_lines[-1][3]]
+
+    k_left = (left_top[1] - left_bottom[1]) * 1.0 / (left_top[0] - left_bottom[0])
+    k_right = (right_top[1] - right_bottom[1]) * 1.0 / (right_top[0] - right_bottom[0])
+
+    left_bottom2 = [int(left_bottom[0] - (left_bottom[1] - ysize) / k_left), ysize]
+    left_top2 = [int(left_top[0] - (left_top[1] - (ysize / 2 + 50)) / k_left), ysize / 2 + 50]
+    right_bottom2 = [int(right_bottom[0] - (right_bottom[1] - ysize) / k_right), ysize]
+    right_top2 = [int(right_top[0] - (right_top[1] - (ysize / 2 + 50)) / k_right), ysize / 2 + 50]
+
+    left_lines.append([left_bottom[0], left_bottom[1], left_bottom2[0], left_bottom2[1]])
+    left_lines.append([left_top[0], left_top[1], left_top2[0], left_top2[1]])
+    right_lines.append([right_bottom[0], right_bottom[1], right_bottom2[0], right_bottom2[1]])
+    right_lines.append([right_top[0], right_top[1], right_top2[0], right_top2[1]])
+
+    return left_lines, right_lines
+
+
 def hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap):
     """
     img should be the output of a Canny transform.
@@ -151,12 +162,9 @@ def hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap):
     """
     lines = cv2.HoughLinesP(img, rho, theta, threshold, np.array([]), minLineLength=min_line_len,
                             maxLineGap=max_line_gap)
-    # left_top, left_bottom, right_top, right_bottom = line_vertexs(img, lines)
-    # line_img = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.uint8)
-    # cv2.line(line_img, (left_bottom[0], left_bottom[1]), (left_top[0], left_top[1]), [255, 0, 0], 5)
-    # cv2.line(line_img, (right_bottom[0], right_bottom[1]), (right_top[0], right_top[1]), [0, 255, 0], 5)
 
     left_lines, right_lines = divide_lines(img, lines)
+    left_lines, right_lines = improved_lines(left_lines, right_lines, img.shape)
     line_img = np.zeros((img.shape[0], img.shape[1], 3), dtype=np.uint8)
     draw_lines(line_img, left_lines, [255, 0, 0], 10)
     draw_lines(line_img, right_lines, [0, 255, 0], 10)
@@ -164,41 +172,36 @@ def hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap):
     return line_img
 
 
-def weighted_img(line_img, initial_img, alpha=0.8, beta=1., theta=0.):
-    # result image = initial_img * alpha + img * beta + theta
-    return cv2.addWeighted(initial_img, alpha, line_img, beta, theta)
-
-
 def process_image(image):
     gray = cv2.cvtColor(image, cv2.COLOR_RGB2GRAY)
-    blur_gray = cv2.GaussianBlur(gray, (5, 5), 0)
-    edges = cv2.Canny(blur_gray, 50, 200)
-    interset_edges = region_of_interest(edges)
-    hough_line = hough_lines(interset_edges, 2, np.pi / 180, 15, 40, 20)
-    result = weighted_img(hough_line, image)
-    #
+    blur = cv2.GaussianBlur(gray, (5, 5), 0)
+    edges = cv2.Canny(blur, 50, 200)
+    roi = get_roi(edges)
+    lines = hough_lines(roi, 2, np.pi / 180, 15, 5, 20)
+    result = cv2.addWeighted(image, 0.8, lines, 1., 0.)
+
     # plt.subplot(231), plt.imshow(image)
     # plt.title("origin"), plt.xticks([]), plt.yticks([])
     # plt.subplot(232), plt.imshow(gray, cmap='gray')
     # plt.title("gray"), plt.xticks([]), plt.yticks([])
     # plt.subplot(233), plt.imshow(edges, cmap='gray')
     # plt.title("edges"), plt.xticks([]), plt.yticks([])
-    # plt.subplot(234), plt.imshow(interset_edges, cmap='gray')
-    # plt.title("interset_edges"), plt.xticks([]), plt.yticks([])
-    # plt.subplot(235), plt.imshow(hough_line, cmap='gray')
-    # plt.title("hough_line"), plt.xticks([]), plt.yticks([])
+    # plt.subplot(234), plt.imshow(roi, cmap='gray')
+    # plt.title("roi"), plt.xticks([]), plt.yticks([])
+    # plt.subplot(235), plt.imshow(lines, cmap='gray')
+    # plt.title("lines"), plt.xticks([]), plt.yticks([])
     # plt.subplot(236), plt.imshow(result)
     # plt.title("result"), plt.xticks([]), plt.yticks([])
     # plt.show()
     return result
 
-
-# image = mpimg.imread('/home/lsq/CarND-term1/CarND-LaneLines-P1/'
-#                      'test_images/solidWhiteCurve.jpg')
+# image = mpimg.imread('test_images/solidWhiteCurve.jpg')
 # process_image(image)
-clip = VideoFileClip("/home/lsq/CarND-term1/CarND-LaneLines-P1/"
-                     "test_videos/challenge.mp4")
-output = "/home/lsq/CarND-term1/CarND-LaneLines-P1/" \
-         "test_videos/challenge_result.mp4"
+
+# subclip of the first 5 second from 0 to 5.
+# clip1 = VideoFileClip("test_videos/solidWhiteRight.mp4").subclip(0,5)
+
+clip = VideoFileClip("test_videos/challenge.mp4")
+output = "test_videos/challenge_result.mp4"
 line_clip = clip.fl_image(process_image)
 line_clip.write_videofile(output, audio=False)
