@@ -22,6 +22,7 @@ My pipeline consisted of 6 steps.
 
 1. Converted the images to grayscale from RGB model 
     ![avatar][lanelines.jpg]
+    [image1]: ./examples/grayscale.jpg "Grayscale"
 2. Use cv2.GaussianBlur() to blur the image
 
 3. The first core operation: detect edges of a gray model image
