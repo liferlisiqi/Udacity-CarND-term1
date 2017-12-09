@@ -17,7 +17,7 @@ The goals / steps of this project are the following:
 [image1]: ./examples/visualization.jpg "Visualization"
 [image2]: ./examples/grayscale.jpg "Grayscaling"
 [image3]: ./examples/random_noise.jpg "Random Noise"
-[image4]: ./test_images/1.ppm "Traffic Sign 1"
+[image4]: ./test_images/1.jpg "Traffic Sign 1"
 [image5]: ./test_images/2.ppm "Traffic Sign 2"
 [image6]: ./test_images/3.ppm "Traffic Sign 3"
 [image7]: ./test_images/4.ppm "Traffic Sign 4"
