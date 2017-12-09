@@ -5,4 +5,4 @@ P2-traffic-sign-classifier/traffic-signs-data/
 P2-traffic-sign-classifier/pre-traffic-signs-data/
 
 # ignore the preprocessed data in the folder: P2-traffic-sign-classifier/model
-P2-traffic-sign-classifier/model/
+P2-traffic-sign-classifier/model/lenet.ckpt.meta
