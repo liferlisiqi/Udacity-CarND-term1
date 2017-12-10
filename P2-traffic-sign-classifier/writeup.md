@@ -59,8 +59,8 @@ Here is an exploratory visualization of the training data set. It is a bar chart
 
 #### 1. Describe how you preprocessed the image data. What techniques were chosen and why did you choose these techniques? Consider including images showing the output of each preprocessing technique. Pre-processing refers to techniques such as converting to grayscale, normalization, etc. 
 
-I didn't convert the images to grayscale, in my opinion, the RGB has more useful information than gray.
-I  normalized the image data, because well distributed data well accelate training operation and increase accuracy.
+I didn't convert the images to grayscale, in my opinion, the RGB has more useful information than gray.  
+I normalized the image data, because well distributed data well accelate training operation and increase accuracy.
 
 
 #### 2. Describe what your final model architecture looks like including model type, layers, layer sizes, connectivity, etc.) Consider including a diagram and/or table describing the final model.
@@ -87,7 +87,7 @@ My final model consisted of the following layers:
 * EPOCHS = 35
 * BATCH_SIZE = 128
 
-The docker image: udacity/carnd-term1-starter-kit are used for data preprossing.
+The docker image: udacity/carnd-term1-starter-kit are used for data preprossing.  
 The docker image: gcr.io/tensorflow/tensorflow:latest-gpu is used for training.
 
 #### 4. Describe the approach taken for finding a solution and getting the validation set accuracy to be at least 0.93. Include in the discussion the results on the training, validation and test sets and where in the code these were calculated. Your approach may have been an iterative process, in which case, outline the steps you took to get to the final solution and why you chose those steps. Perhaps your solution involved an already well known implementation or architecture. In this case, discuss why you think the architecture is suitable for the current problem.
@@ -98,15 +98,15 @@ My final model results were:
 * accuracy of test set: 94.9%
 
 If an iterative approach was chosen:
-* What was the first architecture that was tried and why was it chosen?
+* What was the first architecture that was tried and why was it chosen?  
  My first architecure is LeNet, cause 
-* What were some problems with the initial architecture?
+* What were some problems with the initial architecture?  
  The LeNet model seem doesn't include enough parameters, that accuracy is low.
-* How was the architecture adjusted and why was it adjusted? 
+* How was the architecture adjusted and why was it adjusted?   
  Firstly, I add a convo layer and a fully connect layer to increase accuracy.
  And, I find that the accuracy on training set is up to 97%, but that of testing set is under 93%, so it must be overfitting.
  Therefore, I add dropout to the first three fully connect layer, and successfully, the accuracy on testing set can reach 95%.
-* Which parameters were tuned? How were they adjusted and why?
+* Which parameters were tuned? How were they adjusted and why?  
  I increase epoch from 10 to 35, cause I think 10 epoch isn't enough to complete training.
  And I also decrease learning rate from 0.01 to 0.006, in case ignore the best point.
 
@@ -118,7 +118,9 @@ If an iterative approach was chosen:
 Here are ten German traffic signs that I found on the web:
 
 ![alt text][image4] ![alt text][image5] ![alt text][image6] ![alt text][image7] ![alt text][image8]
-![alt text][image9] ![alt text][image10] ![alt text][image11] ![alt text][image12] ![alt text][image13]
+![alt text][image9] ![alt text][image10] ![alt text][image11] ![alt text][image12] ![alt text][image13]  
+
+The label for each sign is: [0, 1, 3, 5, 8, 23, 26, 30 ,32, 42]
 
 #### 2. Discuss the model's predictions on these new traffic signs and compare the results to predicting on the test set. At a minimum, discuss what the predictions were, the accuracy on these new predictions, and compare the accuracy to the accuracy on the test set .
 
