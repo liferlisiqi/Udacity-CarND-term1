@@ -163,7 +163,7 @@ The first 5 **logist** for each images are as follows (rounded to xx):
 | 32	      	| 32: 34  	 | 6: 17     | 1: 11     | 31: 11     | 15: 9     |
 | 42			| 42: 42  	 | 41: 24    | 12: 12    | 16: 9      | 6: 7      |
  
-The first 5 **softmax probabilities** for each images are as follows (rounded to xx%):
+The first 5 **softmax** probabilities# for each images are as follows (rounded to xx%):
 
 | Image	label   | 1th	     | 2th	     | 3th	     | 4th	      | 5th	      |
 |:-------------:|:----------:|:---------:|:---------:| :---------:|:---------:| 
