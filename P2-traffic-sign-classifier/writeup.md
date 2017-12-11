@@ -122,6 +122,10 @@ Here are ten German traffic signs that I found on the web:
 
 The label for each sign is: [0, 1, 3, 5, 8, 23, 26, 30 ,32, 42]
 
+As we can see, that the 7th figure is overexposed, it can hardly be recognized by eyes. Therefore, the 7th figure may be difficult for the model to classify.   
+The 5th and 10 th figure isn't exposed enough or was taken at night, they are not light enough, so they might also be mistaken.   
+As for the other figures, I think they are clear enough for the model recognized.  
+
 #### 2. Discuss the model's predictions on these new traffic signs and compare the results to predicting on the test set. At a minimum, discuss what the predictions were, the accuracy on these new predictions, and compare the accuracy to the accuracy on the test set .
 
 Here are the results of the prediction:
@@ -144,19 +148,35 @@ The model was able to correctly guess 10 of the 10 traffic signs, which gives an
 
 #### 3. Describe how certain the model is when predicting on each of the 10 new images by looking at the softmax probabilities for each prediction. Provide the top 5 softmax probabilities for each image along with the sign type of each probability. 
 
-The probabilities are rounded to xx%.
+The first 5 **logist** for each images are as follows (rounded to xx):
 
 | Image	label   | 1th	     | 2th	     | 3th	     | 4th	      | 5th	      |
 |:-------------:|:----------:|:---------:|:---------:| :---------:|:---------:| 
-| 0     	    | 0: 26%   	 | 8: 21%    | 1: 15%    | 37: 12%    | 4: 11%    |
-| 1     	    | 1: 23%   	 | 2: 6%     | 11: 6%    | 0: 5%      | 18: 4%    |
-| 3				| 3: 71%   	 | 5: 27%    | 32: 22%   | 2: 8%      | 2: 7%     |
-| 5	      		| 5: 37%   	 | 3: 26%    | 2: 10%    | 4: 9%      | 10: 5%    |
-| 8				| 8: 41%   	 | 7: 18%    | 5: 9%     | 4: 6%      | 0: 6%     |
-| 23        	| 23: 47%    | 10: 26%   | 20: 13%   | 19: 12%    | 29: 11%   | 
-| 26     		| 26: 16%  	 | 18: 14%   | 22: 4%    | 4:2%       | 2: 1%     |
-| 30			| 30: 26%  	 | 17: 9%    | 26: 6%    | 18: 6%     | 11: 6%    |
-| 32	      	| 32: 34%  	 | 6: 17%    | 1: 11%    | 31: 11%    | 15: 9%    |
-| 42			| 42: 42%  	 | 41: 24%   | 12: 12%   | 16: 9%     | 6: 7%     |
+| 0     	    | 0: 26   	 | 8: 21     | 1: 15     | 37: 12     | 4: 11     |
+| 1     	    | 1: 23   	 | 2: 6      | 11: 6     | 0: 5       | 18: 4     |
+| 3				| 3: 71   	 | 5: 27     | 32: 22    | 2: 8       | 2: 7      |
+| 5	      		| 5: 37   	 | 3: 26     | 2: 10     | 4: 9       | 10: 5     |
+| 8				| 8: 41   	 | 7: 18     | 5: 9      | 4: 6       | 0: 6      |
+| 23        	| 23: 47     | 10: 26    | 20: 13    | 19: 12     | 29: 11    | 
+| 26     		| 26: 16  	 | 18: 14    | 22: 4     | 4:2        | 2: 1      |
+| 30			| 30: 26  	 | 17: 9     | 26: 6     | 18: 6      | 11: 6     |
+| 32	      	| 32: 34  	 | 6: 17     | 1: 11     | 31: 11     | 15: 9     |
+| 42			| 42: 42  	 | 41: 24    | 12: 12    | 16: 9      | 6: 7      |
+ 
+The first 5 **softmax** probabilities# for each images are as follows (rounded to xx%):
+
+| Image	label   | 1th	     | 2th	     | 3th	     | 4th	      | 5th	      |
+|:-------------:|:----------:|:---------:|:---------:| :---------:|:---------:| 
+| 0     	    | 0: 100%    | 8: 0%     | 1: 0%     | 37: 0%     | 4: 0%     |
+| 1     	    | 1: 100%    | 2: 0%     | 11:0%     | 0: 0%      | 18: 0%    |
+| 3				| 3: 100%    | 5: 0%     | 32: 0%    | 2: 0%      | 2: 0%     |
+| 5	      		| 5: 100%    | 3: 0%     | 2: 0%     | 4: 0%      | 10: 0%    |
+| 8				| 8: 100%    | 7: 0%     | 5: 0%     | 4: 0%      | 0: 0%     |
+| 23        	| 23: 100%   | 10: 0%    | 20: 0%    | 19: 0%     | 29: 0%    | 
+| 26     		| 26: 100%   | 18: 0%    | 22: 0%    | 4: 0%      | 2: 0%     |
+| 30			| 30: 100%   | 17: 0%    | 26: 0%    | 18: 0%     | 11: 0%    |
+| 32	      	| 32: 100%   | 6: 0%     | 1: 0%     | 31: 0%     | 15: 0%    |
+| 42			| 42: 100%   | 41: 0%    | 12: 0%    | 16: 0%     | 6: 0%     |   
 
 
+We can see that all the 10 images can be correctly recognized by looking at the softmax probabilities. Which means the model can almost be used for recognizing traffic signs. :)
