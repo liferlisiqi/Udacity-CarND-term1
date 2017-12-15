@@ -1,0 +1,49 @@
+FROM gcr.io/tensorflow/tensorflow:latest-gpu
+
+MAINTAINER Li Siqi <lisiqi9310@163.com>
+
+# Install pip3
+RUN curl -O https://bootstrap.pypa.io/get-pip.py && \
+	python3 get-pip.py && \
+	rm get-pip.py
+
+# Add SNI support to Python
+RUN pip3 --no-cache-dir install \
+    pyopenssl \
+    ndg-httpsclient \
+    pyasn1
+
+# Install useful Python packages using pip3 to avoid version incompatibilities with Tensorflow binary
+# especially numpy, scipy, skimage and sklearn (see https://github.com/tensorflow/tensorflow/issues/2034)
+RUN pip3 --no-cache-dir install \
+    numpy \
+    scipy \
+    nose \
+    h5py \
+    scikit-image \
+    matplotlib \
+    pandas \
+    sklearn \
+    sympy 
+
+# Install other useful Python packages using pip3
+RUN pip3 --no-cache-dir install --upgrade ipython && \
+    pip3 --no-cache-dir install \
+    Cython \
+    ipykernel \
+    jupyter \
+    path.py \
+    Pillow \
+    pygments \
+    six \
+    sphinx \
+    wheel \
+    zmq \
+    && \
+    python3 -m ipykernel.kernelspec
+
+# Install tensorflow-gpu and keras using pip3
+RUN pip3 --no-cache-dir install\
+    tensorflow-gpu\
+    keras==1.2.1
+
