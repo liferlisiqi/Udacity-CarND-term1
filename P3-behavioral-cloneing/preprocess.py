@@ -17,6 +17,7 @@ with open('./sample_data/data/driving_log.csv') as sample_file:
     for line in reader:
         lines.append(line)
 
+
 # Get images/features and turning angles/labels
 images = []
 angles = []
@@ -67,11 +68,12 @@ def save_data(pickle_file, start, end):
             raise
     print('Data cached in pickle file.')
     
-
-save_data('./pre-data/3.pickle', 0, 4018)
-save_data('./pre-data/4.pickle', 4018, 8036)
-save_data('./pre-data/5.pickle', 8036, 12054)
-save_data('./pre-data/6.pickle', 12054, 16072)
+save_data('./pre-data/1.pickle', 0, 4018)
+save_data('./pre-data/2.pickle', 4018, 8036)
+save_data('./pre-data/3.pickle', 8036, 12054)
+save_data('./pre-data/4.pickle', 12054, 16072)
+save_data('./pre-data/5.pickle', 16072, 20090)
+save_data('./pre-data/6.pickle', 20090, 24108)
 
 
 
