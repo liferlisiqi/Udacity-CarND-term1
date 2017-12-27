@@ -24,7 +24,8 @@ RUN pip3 --no-cache-dir install \
     matplotlib \
     pandas \
     sklearn \
-    sympy 
+    sympy \
+    tqdm
 
 # Install other useful Python packages using pip3
 RUN pip3 --no-cache-dir install --upgrade ipython && \
@@ -77,7 +78,7 @@ RUN apt-get update && apt-get install -y \
     rm -rf /var/lib/apt/lists/* 
 
 # Install openCV3
-WORKDIR /
+WORKDIR /notebooks
 ENV OPENCV_VERSION="3.4.0"
 RUN apt-get update \
 && wget https://github.com/opencv/opencv/archive/${OPENCV_VERSION}.zip \
