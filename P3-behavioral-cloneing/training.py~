@@ -20,28 +20,14 @@ def reload_data(pickle_file):
         X_train = pickle_data['X_train']
         y_train = pickle_data['y_train']
         del pickle_data  # Free up memory
-    print('X_train shape: ', X_train.shape, 'y_train shape: ',y_train.shape)
     return X_train, y_train
 
-X_train1, y_train1 = reload_data('./pre-data/1.pickle')
-X_train2, y_train2 = reload_data('./pre-data/2.pickle')
-X_train3, y_train3 = reload_data('./pre-data/3.pickle')
-X_train4, y_train4 = reload_data('./pre-data/4.pickle')
-X_train5, y_train5 = reload_data('./pre-data/5.pickle')
-X_train6, y_train6 = reload_data('./pre-data/6.pickle')
-
-
-# Combine the data set
-print('combine data set ...')
-X_train = np.concatenate((X_train1, X_train2, X_train3, X_train4, X_train5, X_train6))right_img
-y_train = np.concatenate((y_train1, y_train2, y_train3, y_train4, y_train5, y_train6))
+X_train, y_train = reload_data('./pre-data.pickle')
 X_train, y_train = shuffle(X_train, y_train)
 print('X_train shape: ', X_train.shape, 'y_train shape: ',y_train.shape)
 
 
-# ## Model architecture
-
-# ### model 2: Nvidia
+# Model architecture
 
 nvidia = Sequential()
 nvidia.add(Lambda(lambda x: x/255. - 0.5, input_shape=(80, 160, 3)))
@@ -59,7 +45,7 @@ nvidia.add(Dense(10))
 nvidia.add(Dense(1))
 
 
-# ## Training method
+# Training method
 
 # Hyperparameters
 LEARNING_RATE = 1e-4
